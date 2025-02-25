@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Pet Adoption{% endblock %}
+
+{% block content %}
+<div class="jumbotron bg-light p-5 rounded">
+    <div class="container">
+        <h1 class="display-4">Find Your Forever Friend</h1>
+        <p class="lead">Browse our selection of lovable pets waiting for their forever homes.</p>
+        <hr class="my-4">
+        <p>Each pet has a unique personality and story. Are you ready to meet your perfect companion?</p>
+        <a class="btn btn-primary btn-lg" href="{% url 'pet_list' %}" role="button">Browse Available Pets</a>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Recently Added Pets</h2>
+    
+    <div class="row">
+        {% if recent_pets %}
+            {% for pet in recent_pets %}
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100 pet-card">
+                        {% if pet.image %}
+                            <img src="{{ pet.image.url }}" class="card-img-top" alt="{{ pet.name }}" style="height: 200px; object-fit: cover;">
+                        {% else %}
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                <span class="text-muted">No image available</span>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 class="card-title">{{ pet.name }}</h5>
+                            <p class="card-text text-muted">{{ pet.breed }}</p>
+                            <p class="card-text">
+                                {% if pet.age < 12 %}
+                                    {{ pet.age }} month{{ pet.age|pluralize }}
+                                {% else %}
+                                    {{ pet.age|divisibleby:12 }} year{{ pet.age|divisibleby:12|pluralize }}
+                                {% endif %}
+                            </p>
+                            <a href="{% url 'pet_detail' pet.id %}" class="btn btn-outline-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <p>No pets available for adoption at this time. Please check back later.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="text-center mt-3">
+        <a href="{% url 'pet_list' %}" class="btn btn-outline-primary">View All Pets</a>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h2 class="card-title mb-3">{{ user.username }}</h2>
+                <p class="text-muted">{{ user.email }}</p>
+                <p>Member since: {{ user.date_joined|date:"F j, Y" }}</p>
+                <a href="{% url 'password_reset' %}" class="btn btn-outline-secondary btn-sm">Change Password</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title mb-4">My Adoption Applications</h3>
+                
+                {% if adoption_applications %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Pet</th>
+                                    <th>Applied on</th>
+                                    <th>Status</th>
+                                    <th>Last Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in adoption_applications %}
+                                    <tr>
+                                        <td>
+                                            <a href="{% url 'pet_detail' application.pet.id %}">
+                                                {{ application.pet.name }}
+                                            </a>
+                                        </td>
+                                        <td>{{ application.created_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if application.application_status == 'approved' %}bg-success
+                                                {% elif application.application_status == 'pending' %}bg-warning
+                                                {% elif application.application_status == 'denied' %}bg-danger
+                                                {% else %}bg-secondary{% endif %}">
+                                                {{ application.get_application_status_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ application.updated_at|date:"M d, Y" }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        You haven't applied to adopt any pets yet. <a href="{% url 'pet_list' %}">View available pets</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

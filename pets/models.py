@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Breed(models.Model):
-    """Model representing a breed of pet."""
     name = models.CharField(max_length=100)
     species = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -14,9 +13,7 @@ class Breed(models.Model):
         ordering = ['species', 'name']
 
 class Pet(models.Model):
-    """Model representing a pet available for adoption."""
     
-    # Status choices
     STATUS_CHOICES = [
         ('available', 'Available for Adoption'),
         ('pending', 'Adoption Pending'),
@@ -39,9 +36,7 @@ class Pet(models.Model):
         ordering = ['-date_added']
 
 class AdoptionApplication(models.Model):
-    """Model representing an application to adopt a pet."""
     
-    # Status choices
     STATUS_CHOICES = [
         ('pending', 'Pending Review'),
         ('approved', 'Approved'),
@@ -64,7 +59,6 @@ class AdoptionApplication(models.Model):
     
     class Meta:
         ordering = ['-created_at']
-        # Ensure a user can only have one active application per pet
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'pet'],
