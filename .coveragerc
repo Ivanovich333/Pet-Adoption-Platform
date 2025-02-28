@@ -1,17 +1,6 @@
 [run]
 source = pets,accounts,pet_adoption
-omit =
-    */migrations/*
-    */tests/*
-    */test_*.py
-    */admin.py
-    */apps.py
-    */urls.py
-    */wsgi.py
-    */asgi.py
-    */settings.py
-    */manage.py
-    */__init__.py
+omit = */migrations/*,*/tests/*,*/test_*.py,*/admin.py,*/apps.py,*/urls.py,*/wsgi.py,*/asgi.py,*/settings.py,*/manage.py,*/__init__.py
 
 [report]
 exclude_lines =
@@ -23,6 +12,6 @@ exclude_lines =
     raise ImportError
     except ImportError
     def __str__
-    
+
 [html]
 directory = htmlcov 
