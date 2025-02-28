@@ -88,4 +88,40 @@ Then rebuild and restart the containers:
 ```bash
 docker-compose build
 docker-compose up -d
+```
+
+## CI/CD Pipeline
+
+This project uses GitHub Actions for continuous integration and deployment.
+
+### Workflow Steps
+
+- **Test**: Runs tests with pytest and generates code coverage reports
+- **Lint**: Runs flake8 to check code style and quality
+- **Build**: Builds and pushes Docker images to Docker Hub (on main/master branch)
+- **Deploy**: Deploys the application to the production server (on main/master branch, requires additional setup)
+
+### Setting Up the CI/CD Pipeline
+
+1. Push your code to a GitHub repository
+2. Set up the required secrets in your GitHub repository settings:
+   - `DOCKER_HUB_USERNAME`: Your Docker Hub username
+   - `DOCKER_HUB_ACCESS_TOKEN`: Your Docker Hub access token
+   - For deployment, you'll also need `SERVER_HOST`, `SERVER_USERNAME`, and `SERVER_SSH_KEY`
+
+See the detailed setup instructions in `.github/setup-instructions.md`.
+
+### Running Tests Locally
+
+To run tests locally with the same configuration as the CI pipeline:
+
+```bash
+# Install development dependencies
+poetry install --with dev
+
+# Run tests with coverage
+pytest --cov=pets --cov=accounts --cov-report=xml
+
+# Run linting
+flake8
 ``` 
