@@ -1,5 +1,7 @@
 # Pet Adoption Platform
 
+[![Django CI/CD Pipeline](https://github.com/yourusername/Pet-Adoption-Platform/actions/workflows/django-ci.yml/badge.svg)](https://github.com/yourusername/Pet-Adoption-Platform/actions/workflows/django-ci.yml)
+
 A Django-based web application for pet adoption management.
 
 ## Project Setup
