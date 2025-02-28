@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load pet_filters %}
 
 {% block title %}Home - Pet Adoption{% endblock %}
 
@@ -35,7 +36,10 @@
                                 {% if pet.age < 12 %}
                                     {{ pet.age }} month{{ pet.age|pluralize }}
                                 {% else %}
-                                    {{ pet.age|divisibleby:12 }} year{{ pet.age|divisibleby:12|pluralize }}
+                                    {{ pet.age|intdiv:12 }} year{{ pet.age|intdiv:12|pluralize }}
+                                    {% if pet.age|modulo:12 != 0 %}
+                                        {{ pet.age|modulo:12 }} month{{ pet.age|modulo:12|pluralize }}
+                                    {% endif %}
                                 {% endif %}
                             </p>
                             <a href="{% url 'pet_detail' pet.id %}" class="btn btn-outline-primary">View Details</a>

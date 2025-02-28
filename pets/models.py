@@ -28,6 +28,7 @@ class Pet(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
     image = models.ImageField(upload_to='pets/', blank=True, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='pets', null=True, blank=True)
     
     def __str__(self):
         return f"{self.name} - {self.breed}"

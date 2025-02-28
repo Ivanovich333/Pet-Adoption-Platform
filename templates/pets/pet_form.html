@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-light">
+                <h1 class="h3 mb-0">{{ title }}</h1>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.name.id_for_label }}" class="form-label">Pet Name</label>
+                        {{ form.name.errors }}
+                        <input type="text" name="{{ form.name.name }}" id="{{ form.name.id_for_label }}" 
+                               class="form-control {% if form.name.errors %}is-invalid{% endif %}" 
+                               value="{{ form.name.value|default:'' }}">
+                        {% if form.name.help_text %}
+                            <small class="form-text text-muted">{{ form.name.help_text }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.age.id_for_label }}" class="form-label">Age (in months)</label>
+                            {{ form.age.errors }}
+                            <input type="number" name="{{ form.age.name }}" id="{{ form.age.id_for_label }}" 
+                                   class="form-control {% if form.age.errors %}is-invalid{% endif %}" 
+                                   value="{{ form.age.value|default:'' }}">
+                            {% if form.age.help_text %}
+                                <small class="form-text text-muted">{{ form.age.help_text }}</small>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.breed.id_for_label }}" class="form-label">Breed</label>
+                            {{ form.breed.errors }}
+                            <select name="{{ form.breed.name }}" id="{{ form.breed.id_for_label }}" 
+                                    class="form-select {% if form.breed.errors %}is-invalid{% endif %}">
+                                <option value="">Select a breed</option>
+                                {% for choice in form.breed.field.queryset %}
+                                    <option value="{{ choice.id }}" 
+                                        {% if form.breed.value|stringformat:"s" == choice.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ choice.name }} ({{ choice.species|title }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if form.breed.help_text %}
+                                <small class="form-text text-muted">{{ form.breed.help_text }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                        {{ form.description.errors }}
+                        <textarea name="{{ form.description.name }}" id="{{ form.description.id_for_label }}" 
+                                  class="form-control {% if form.description.errors %}is-invalid{% endif %}" 
+                                  rows="5">{{ form.description.value|default:'' }}</textarea>
+                        {% if form.description.help_text %}
+                            <small class="form-text text-muted">{{ form.description.help_text }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="{{ form.image.id_for_label }}" class="form-label">Pet Image</label>
+                        {{ form.image.errors }}
+                        <input type="file" name="{{ form.image.name }}" id="{{ form.image.id_for_label }}" 
+                               class="form-control {% if form.image.errors %}is-invalid{% endif %}">
+                        {% if form.image.help_text %}
+                            <small class="form-text text-muted">{{ form.image.help_text }}</small>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'pet_list' %}" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Pet</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,73 +1,149 @@
 {% extends 'base.html' %}
+{% load pet_filters %}
 
 {% block title %}{{ pet.name }} - Pet Adoption{% endblock %}
 
 {% block content %}
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'pet_list' %}">Available Pets</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ pet.name }}</li>
+  </ol>
+</nav>
+
 <div class="row">
-    <div class="col-md-6">
-        <div class="card shadow-sm mb-4">
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow border-0">
             {% if pet.image %}
-                <img src="{{ pet.image.url }}" class="card-img-top" alt="{{ pet.name }}" style="height: 400px; object-fit: cover;">
+                <img src="{{ pet.image.url }}" class="card-img-top rounded-top" alt="{{ pet.name }}" style="height: 400px; object-fit: cover;">
             {% else %}
-                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 400px;">
-                    <span class="text-muted">No image available</span>
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center rounded-top" style="height: 400px;">
+                    <span class="text-muted fs-5">No image available</span>
                 </div>
             {% endif %}
-        </div>
-    </div>
-    
-    <div class="col-md-6">
-        <div class="card shadow-sm mb-4">
             <div class="card-body">
-                <h1 class="card-title mb-3">{{ pet.name }}</h1>
-                
-                <div class="mb-3">
-                    <span class="badge bg-primary">{{ pet.breed }}</span>
-                    <span class="badge {% if pet.status == 'available' %}bg-success{% else %}bg-warning{% endif %}">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h1 class="card-title mb-0">{{ pet.name }}</h1>
+                    <span class="badge {% if pet.status == 'available' %}bg-success{% elif pet.status == 'pending' %}bg-warning{% else %}bg-secondary{% endif %} fs-6">
                         {{ pet.get_status_display }}
                     </span>
                 </div>
                 
-                <p class="card-text">
-                    <strong>Age:</strong>
-                    {% if pet.age < 12 %}
-                        {{ pet.age }} month{{ pet.age|pluralize }}
-                    {% else %}
-                        {{ pet.age|divisibleby:12 }} year{{ pet.age|divisibleby:12|pluralize }}
-                    {% endif %}
-                </p>
-                
-                <p class="card-text"><strong>Description:</strong></p>
-                <p class="card-text">{{ pet.description }}</p>
-                
-                <p class="card-text"><strong>Added:</strong> {{ pet.date_added|date:"F j, Y" }}</p>
-                
-                {% if pet.status == 'available' %}
-                    {% if user.is_authenticated %}
-                        {% if user_has_applied %}
-                            <button class="btn btn-secondary" disabled>Application Submitted</button>
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="badge bg-info text-dark">{{ pet.breed.species|title }}</span>
+                    <span class="badge bg-primary">{{ pet.breed.name }}</span>
+                    <span class="badge bg-light text-dark border">
+                        {% if pet.age < 12 %}
+                            {{ pet.age }} month{{ pet.age|pluralize }}
                         {% else %}
-                            <a href="{% url 'adopt_pet' pet.id %}" class="btn btn-primary">Apply to Adopt</a>
+                            {{ pet.age|divisibleby:12 }} year{{ pet.age|divisibleby:12|pluralize }}
                         {% endif %}
-                    {% else %}
-                        <div class="alert alert-info">
-                            <a href="{% url 'login' %}">Log in</a> or <a href="{% url 'register' %}">register</a> to apply for adoption.
-                        </div>
-                    {% endif %}
-                {% else %}
-                    <button class="btn btn-secondary" disabled>{{ pet.get_status_display }}</button>
-                {% endif %}
+                    </span>
+                </div>
             </div>
         </div>
     </div>
+    
+    <div class="col-lg-6">
+        <div class="card shadow border-0 mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">About {{ pet.name }}</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ pet.description|linebreaks }}</p>
+                
+                <hr class="my-4">
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Breed:</strong> {{ pet.breed.name }}</p>
+                        <p><strong>Species:</strong> {{ pet.breed.species|title }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Age:</strong>
+                            {% if pet.age < 12 %}
+                                {{ pet.age }} month{{ pet.age|pluralize }}
+                            {% else %}
+                                {{ pet.age|intdiv:12 }} year{{ pet.age|intdiv:12|pluralize }}
+                                {% if pet.age|modulo:12 != 0 %}
+                                    {{ pet.age|modulo:12 }} month{{ pet.age|modulo:12|pluralize }}
+                                {% endif %}
+                            {% endif %}
+                        </p>
+                        <p><strong>Added:</strong> {{ pet.date_added|date:"F j, Y" }}</p>
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+                
+                <div class="d-grid gap-2">
+                    {% if pet.status == 'available' %}
+                        {% if user.is_authenticated %}
+                            {% if user_has_applied %}
+                                <button class="btn btn-secondary btn-lg" disabled>
+                                    <i class="bi bi-check-circle-fill me-2"></i> Application Submitted
+                                </button>
+                            {% else %}
+                                <a href="{% url 'adopt_pet' pet.id %}" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-heart-fill me-2"></i> Apply to Adopt {{ pet.name }}
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <div class="alert alert-info mb-0">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                <a href="{% url 'login' %}">Log in</a> or <a href="{% url 'register' %}">register</a> to apply for adoption.
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <button class="btn btn-secondary btn-lg" disabled>
+                            <i class="bi bi-x-circle me-2"></i> {{ pet.get_status_display }}
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if pet.breed.description %}
+        <div class="card shadow border-0 mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">About {{ pet.breed.name }}</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ pet.breed.description|linebreaks }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
 </div>
 
-<div class="row">
+<div class="row mt-3">
     <div class="col-12">
-        <div class="d-flex justify-content-between mb-4">
+        <div class="d-flex justify-content-between">
             <a href="{% url 'pet_list' %}" class="btn btn-outline-primary">
-                <i class="bi bi-arrow-left"></i> Back to Pet List
+                <i class="bi bi-arrow-left me-2"></i> Back to Pet List
             </a>
+            <div>
+                {% if user.is_authenticated %}
+                    {% if is_owner %}
+                        <a href="{% url 'edit_pet' pet.id %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-pencil-fill me-2"></i> Edit Pet
+                        </a>
+                        <a href="{% url 'delete_pet' pet.id %}" class="btn btn-outline-danger ms-2">
+                            <i class="bi bi-trash-fill me-2"></i> Delete
+                        </a>
+                    {% elif pet.status == 'available' and not user_has_applied %}
+                        <a href="{% url 'adopt_pet' pet.id %}" class="btn btn-primary">
+                            <i class="bi bi-heart-fill me-2"></i> Apply to Adopt
+                        </a>
+                    {% elif user_has_applied %}
+                        <button class="btn btn-secondary" disabled>
+                            <i class="bi bi-check-circle-fill me-2"></i> Application Submitted
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
         </div>
     </div>
 </div>

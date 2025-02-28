@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete {{ pet.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6 mx-auto">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-danger text-white">
+                <h1 class="h3 mb-0">Confirm Deletion</h1>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+                
+                <p class="mb-4">Are you sure you want to delete the listing for <strong>{{ pet.name }}</strong>?</p>
+                
+                <div class="d-flex gap-2 justify-content-end">
+                    <a href="{% url 'pet_detail' pet.id %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle me-2"></i>Cancel
+                    </a>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash me-2"></i>Delete Pet
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
