@@ -57,6 +57,13 @@
                         </a>
                     </li>
                     {% endif %}
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'admin_applications' %}">
+                            <i class="bi bi-clipboard-check me-1"></i>Applications
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}

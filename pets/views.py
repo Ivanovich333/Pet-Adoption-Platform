@@ -274,11 +274,15 @@ def admin_applications_list(request):
     """
     status_filter = request.GET.get('status')
     search_query = request.GET.get('q')
+    pet_filter = request.GET.get('pet')
     
     applications = AdoptionApplication.objects.all()
     
     if status_filter:
         applications = applications.filter(application_status=status_filter)
+    
+    if pet_filter:
+        applications = applications.filter(pet_id=pet_filter)
     
     if search_query:
         applications = applications.filter(
@@ -304,6 +308,7 @@ def admin_applications_list(request):
         'applications': applications,
         'status_filter': status_filter,
         'search_query': search_query,
+        'pet_filter': pet_filter,
         'is_paginated': paginator.num_pages > 1,
         'page_obj': applications,
     }

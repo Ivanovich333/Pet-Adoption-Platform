@@ -50,6 +50,22 @@
     .reject-button {
       background-color: #dc3545;
     }
+    .filter-badge {
+      margin-right: 10px;
+      padding: 5px 10px;
+      background-color: #f0f0f0;
+      border-radius: 4px;
+      font-size: 0.9em;
+      display: inline-flex;
+      align-items: center;
+    }
+    .filter-badge a {
+      margin-left: 8px;
+      color: #999;
+    }
+    .filter-badge a:hover {
+      color: #d9534f;
+    }
   </style>
 {% endblock %}
 
@@ -64,10 +80,37 @@
       <div>
         <label for="searchbar"><img src="{% static 'admin/img/search.svg' %}" alt="Search"></label>
         <input type="text" size="40" name="q" value="{{ request.GET.q }}" id="searchbar" autofocus>
+        {% if pet_filter %}<input type="hidden" name="pet" value="{{ pet_filter }}">{% endif %}
+        {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
         <input type="submit" value="{% trans 'Search' %}">
       </div>
     </form>
   </div>
+  
+  {% if pet_filter or status_filter %}
+  <div class="active-filters mt-2 mb-3">
+    <h6>Active Filters:</h6>
+    <div>
+      {% if pet_filter %}
+        {% with pet=applications.0.pet %}
+          <span class="filter-badge">
+            Pet: {{ pet.name }}
+            <a href="?{% if status_filter %}status={{ status_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" title="Remove filter">×</a>
+          </span>
+        {% endwith %}
+      {% endif %}
+      {% if status_filter %}
+        <span class="filter-badge">
+          Status: {{ status_filter|title }}
+          <a href="?{% if pet_filter %}pet={{ pet_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" title="Remove filter">×</a>
+        </span>
+      {% endif %}
+      {% if pet_filter or status_filter or search_query %}
+        <a href="?" class="btn btn-sm btn-outline-secondary">Clear All Filters</a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
   
   <div class="results">
     <div class="filters">
@@ -75,10 +118,10 @@
       <div>
         <h3>Status</h3>
         <ul>
-          <li{% if not status_filter %} class="selected"{% endif %}><a href="?">All</a></li>
-          <li{% if status_filter == 'pending' %} class="selected"{% endif %}><a href="?status=pending">Pending</a></li>
-          <li{% if status_filter == 'approved' %} class="selected"{% endif %}><a href="?status=approved">Approved</a></li>
-          <li{% if status_filter == 'denied' %} class="selected"{% endif %}><a href="?status=denied">Denied</a></li>
+          <li{% if not status_filter %} class="selected"{% endif %}><a href="?{% if pet_filter %}pet={{ pet_filter }}{% endif %}">All</a></li>
+          <li{% if status_filter == 'pending' %} class="selected"{% endif %}><a href="?status=pending{% if pet_filter %}&pet={{ pet_filter }}{% endif %}">Pending</a></li>
+          <li{% if status_filter == 'approved' %} class="selected"{% endif %}><a href="?status=approved{% if pet_filter %}&pet={{ pet_filter }}{% endif %}">Approved</a></li>
+          <li{% if status_filter == 'denied' %} class="selected"{% endif %}><a href="?status=denied{% if pet_filter %}&pet={{ pet_filter }}{% endif %}">Denied</a></li>
         </ul>
       </div>
     </div>
@@ -119,8 +162,8 @@
           <div class="pagination">
             <span class="step-links">
               {% if page_obj.has_previous %}
-                <a href="?page=1">&laquo; first</a>
-                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                <a href="?page=1{% if status_filter %}&status={{ status_filter }}{% endif %}{% if pet_filter %}&pet={{ pet_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if pet_filter %}&pet={{ pet_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">previous</a>
               {% endif %}
               
               <span class="current">
@@ -128,8 +171,8 @@
               </span>
               
               {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}">next</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                <a href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if pet_filter %}&pet={{ pet_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if pet_filter %}&pet={{ pet_filter }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">last &raquo;</a>
               {% endif %}
             </span>
           </div>
