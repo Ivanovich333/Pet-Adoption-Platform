@@ -1,11 +1,14 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from .models import Pet, AdoptionApplication, Breed
 from django.forms import ModelForm, widgets
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import json
 from django.core.serializers.json import DjangoJSONEncoder
+from django.utils import timezone
+from django.http import HttpResponseRedirect
+from django.db import models
 
 
 class AdoptionApplicationForm(ModelForm):
@@ -203,3 +206,106 @@ def delete_pet(request, pet_id):
         return redirect('pet_list')
     
     return render(request, 'pets/pet_confirm_delete.html', {'pet': pet})
+
+
+@user_passes_test(lambda u: u.is_staff)
+def admin_approve_application(request, application_id):
+    """
+    View for administrators to approve an adoption application.
+    Updates both the application status and the pet status.
+    """
+    application = get_object_or_404(AdoptionApplication, id=application_id)
+    
+    if application.application_status != 'pending':
+        messages.error(request, f"Cannot approve application that is already {application.get_application_status_display()}")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/admin/pets/adoptionapplication/'))
+    
+    application.application_status = 'approved'
+    application.updated_at = timezone.now()
+    application.save()
+    
+    pet = application.pet
+    pet.status = 'adopted'
+    pet.owner = application.user
+    pet.save()
+    
+    other_applications = AdoptionApplication.objects.filter(
+        pet=pet, 
+        application_status='pending'
+    ).exclude(id=application.id)
+    
+    for other_app in other_applications:
+        other_app.application_status = 'denied'
+        other_app.save()
+    
+    messages.success(request, f"Application for {pet.name} by {application.user.username} has been approved!")
+    return redirect('admin:pets_adoptionapplication_changelist')
+
+
+@user_passes_test(lambda u: u.is_staff)
+def admin_reject_application(request, application_id):
+    """
+    View for administrators to reject an adoption application.
+    """
+    application = get_object_or_404(AdoptionApplication, id=application_id)
+    
+    if application.application_status != 'pending':
+        messages.error(request, f"Cannot reject application that is already {application.get_application_status_display()}")
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/admin/pets/adoptionapplication/'))
+    
+    application.application_status = 'denied'
+    application.updated_at = timezone.now()
+    application.save()
+    
+    pet = application.pet
+    if not AdoptionApplication.objects.filter(pet=pet, application_status='pending').exists():
+        pet.status = 'available'
+        pet.save()
+    
+    messages.success(request, f"Application for {pet.name} by {application.user.username} has been rejected.")
+    return redirect('admin:pets_adoptionapplication_changelist')
+
+
+@user_passes_test(lambda u: u.is_staff)
+def admin_applications_list(request):
+    """
+    View for administrators to list and filter all adoption applications.
+    Provides a more user-friendly interface than the default admin page.
+    """
+    status_filter = request.GET.get('status')
+    search_query = request.GET.get('q')
+    
+    applications = AdoptionApplication.objects.all()
+    
+    if status_filter:
+        applications = applications.filter(application_status=status_filter)
+    
+    if search_query:
+        applications = applications.filter(
+            models.Q(pet__name__icontains=search_query) |
+            models.Q(user__username__icontains=search_query) |
+            models.Q(user__email__icontains=search_query) |
+            models.Q(reason__icontains=search_query)
+        )
+    
+    applications = applications.order_by('-created_at')
+    
+    paginator = Paginator(applications, 10)
+    page = request.GET.get('page')
+    
+    try:
+        applications = paginator.page(page)
+    except PageNotAnInteger:
+        applications = paginator.page(1)
+    except EmptyPage:
+        applications = paginator.page(paginator.num_pages)
+    
+    context = {
+        'applications': applications,
+        'status_filter': status_filter,
+        'search_query': search_query,
+        'is_paginated': paginator.num_pages > 1,
+        'page_obj': applications,
+    }
+    
+    return render(request, 'pets/admin_applications.html', context)

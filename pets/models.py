@@ -67,3 +67,6 @@ class AdoptionApplication(models.Model):
                 name='unique_active_application'
             )
         ]
+
+    def get_application_status_display(self):
+        return dict(self.STATUS_CHOICES)[self.application_status]

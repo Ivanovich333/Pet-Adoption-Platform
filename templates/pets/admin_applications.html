@@ -1,0 +1,143 @@
+{% extends 'admin/base_site.html' %}
+{% load i18n static admin_urls %}
+
+{% block extrastyle %}
+  {{ block.super }}
+  <style>
+    .application-card {
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      padding: 15px;
+      transition: box-shadow 0.3s;
+    }
+    .application-card:hover {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .badge-pending {
+      background-color: #ffc107;
+      color: #212529;
+    }
+    .badge-approved {
+      background-color: #28a745;
+      color: white;
+    }
+    .badge-denied {
+      background-color: #dc3545;
+      color: white;
+    }
+    .badge-withdrawn {
+      background-color: #6c757d;
+      color: white;
+    }
+    .badge {
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 0.8em;
+    }
+    .action-button {
+      margin-right: 10px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      text-decoration: none;
+      color: white;
+      display: inline-block;
+    }
+    .approve-button {
+      background-color: #28a745;
+    }
+    .reject-button {
+      background-color: #dc3545;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="module" id="changelist">
+  <div class="navbar">
+    <h1>Adoption Applications</h1>
+  </div>
+  
+  <div id="toolbar">
+    <form id="changelist-search" method="get">
+      <div>
+        <label for="searchbar"><img src="{% static 'admin/img/search.svg' %}" alt="Search"></label>
+        <input type="text" size="40" name="q" value="{{ request.GET.q }}" id="searchbar" autofocus>
+        <input type="submit" value="{% trans 'Search' %}">
+      </div>
+    </form>
+  </div>
+  
+  <div class="results">
+    <div class="filters">
+      <h2>Filter</h2>
+      <div>
+        <h3>Status</h3>
+        <ul>
+          <li{% if not status_filter %} class="selected"{% endif %}><a href="?">All</a></li>
+          <li{% if status_filter == 'pending' %} class="selected"{% endif %}><a href="?status=pending">Pending</a></li>
+          <li{% if status_filter == 'approved' %} class="selected"{% endif %}><a href="?status=approved">Approved</a></li>
+          <li{% if status_filter == 'denied' %} class="selected"{% endif %}><a href="?status=denied">Denied</a></li>
+        </ul>
+      </div>
+    </div>
+    
+    <div class="applications">
+      {% if applications %}
+        {% for application in applications %}
+          <div class="application-card">
+            <div class="row">
+              <div class="col-md-8">
+                <h3>
+                  Application for {{ application.pet.name }} 
+                  <span class="badge badge-{{ application.application_status }}">
+                    {{ application.get_application_status_display }}
+                  </span>
+                </h3>
+                <p><strong>Applicant:</strong> {{ application.user.username }} ({{ application.user.email }})</p>
+                <p><strong>Pet:</strong> {{ application.pet.name }} ({{ application.pet.breed }})</p>
+                <p><strong>Application Date:</strong> {{ application.created_at|date:"F j, Y" }}</p>
+                <p><strong>Reason:</strong> {{ application.reason|truncatewords:15 }}</p>
+              </div>
+              <div class="col-md-4 text-end">
+                {% if application.application_status == 'pending' %}
+                  <a href="{% url 'admin_approve_application' application.id %}" class="action-button approve-button">
+                    Approve
+                  </a>
+                  <a href="{% url 'admin_reject_application' application.id %}" class="action-button reject-button">
+                    Reject
+                  </a>
+                {% endif %}
+                <a href="{% url 'admin:pets_adoptionapplication_change' application.id %}" class="viewlink">View Details</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+        
+        {% if is_paginated %}
+          <div class="pagination">
+            <span class="step-links">
+              {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+              {% endif %}
+              
+              <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+              </span>
+              
+              {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+              {% endif %}
+            </span>
+          </div>
+        {% endif %}
+      {% else %}
+        <p>No applications found.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %} 
